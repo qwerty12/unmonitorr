@@ -131,3 +131,14 @@ export async function unmonitorEpisode(
   }
   return res.end();
 }
+
+export async function getRootFolders(): Promise<string[]> {
+  if (!SONARR_API_KEY) {
+    return [];
+  }
+
+  const rootFolderResponse = await fetch(api.getUrl('rootFolder'));  
+  const rootFolders = (await rootFolderResponse.json()) as components['schemas']['RootFolderResource'][];
+
+  return rootFolders.map(rootFolder => rootFolder.path).filter((path): path is string => !!path);
+}

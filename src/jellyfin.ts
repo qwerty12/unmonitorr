@@ -3,11 +3,13 @@ import { ParamsDictionary } from 'express-serve-static-core';
 
 import type { Request, Response } from 'express';
 import { unmonitorMovie } from './radarr.js';
-import { unmonitorEpisode } from './sonarr.js';
+import { unmonitorEpisode, getRootFolders } from './sonarr.js';
 
 const { JELLYFIN_PORT = '9898' } = process.env;
 
 export function startJellyfinUnmonitor() {
+  // XXX: if the Webhook plugin shows the library name in the future, just use that instead (ideally, the plugin itself would let you choose the libraries to act on)
+  getRootFolders().then(sonarrRootFolders => {
   console.log(
     `Unmonitoring for jellyfin on /jellyfin with port: ${JELLYFIN_PORT}`,
   );
@@ -30,7 +32,8 @@ export function startJellyfinUnmonitor() {
 
       switch (Item.Type) {
         case 'Episode': {
-          if (Series.UserData.IsFavorite) {
+          const itemPath = Item.Path;
+          if (Series.UserData.IsFavorite || !sonarrRootFolders.some(rootFolder => itemPath.startsWith(rootFolder))) {
             res.end();
             return;
           }
@@ -54,4 +57,5 @@ export function startJellyfinUnmonitor() {
   );
 
   app.listen(parseInt(JELLYFIN_PORT, 10));
+  })
 }
