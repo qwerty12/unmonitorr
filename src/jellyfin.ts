@@ -23,13 +23,18 @@ export function startJellyfinUnmonitor() {
     ) => {
       const { Item, Series } = req.body;
 
-      if ((false as boolean) && !Item.UserData.Played) {
+      if (Item.UserData.IsFavorite) {
         res.end();
         return;
       }
 
       switch (Item.Type) {
         case 'Episode': {
+          if (Series.UserData.IsFavorite) {
+            res.end();
+            return;
+          }
+
           const episodeTvdbIds = [Item.ProviderIds.Tvdb];
           const seriesTitle = Series.OriginalTitle;
 
