@@ -23,7 +23,7 @@ export function startJellyfinUnmonitor() {
     ) => {
       const { Item, Series } = req.body;
 
-      if (!Item.UserData.Played) {
+      if ((false as boolean) && !Item.UserData.Played) {
         res.end();
         return;
       }
