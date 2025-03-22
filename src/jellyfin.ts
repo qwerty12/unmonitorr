@@ -9,11 +9,11 @@ const { JELLYFIN_PORT = '9898' } = process.env;
 
 export function startJellyfinUnmonitor() {
   // XXX: if the Webhook plugin shows the library name in the future, just use that instead (ideally, the plugin itself would let you choose the libraries to act on)
-  getRootFolders().then(sonarrRootFolders => {
   console.log(
     `Unmonitoring for jellyfin on /jellyfin with port: ${JELLYFIN_PORT}`,
   );
 
+  let sonarrRootFolders: string[] | null = null;
   const app = express();
 
   app.post(
@@ -25,6 +25,11 @@ export function startJellyfinUnmonitor() {
     ) => {
       const { Item, Series } = req.body;
 
+      if (sonarrRootFolders === null) {
+        sonarrRootFolders = [];
+        getRootFolders().then(rootFolders => sonarrRootFolders = rootFolders);
+      }
+
       if (Item.UserData.IsFavorite) {
         res.end();
         return;
@@ -34,7 +39,7 @@ export function startJellyfinUnmonitor() {
         case 'Episode': {
           const itemPath = Item.Path;
           const episodeSonarrId = Item.ProviderIds.sonarr;
-          if ((Series.UserData.IsFavorite) || (!episodeSonarrId && !sonarrRootFolders.some(rootFolder => itemPath.startsWith(rootFolder)))) {
+          if ((Series.UserData.IsFavorite) || (!episodeSonarrId && sonarrRootFolders && !sonarrRootFolders.some(rootFolder => itemPath.startsWith(rootFolder)))) {
             res.end();
             return;
           }
@@ -58,5 +63,4 @@ export function startJellyfinUnmonitor() {
   );
 
   app.listen(parseInt(JELLYFIN_PORT, 10));
-  })
 }
