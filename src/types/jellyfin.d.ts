@@ -49,6 +49,7 @@ interface JellyfinApiResponse {
     RemoteTrailers: object[];
     ProviderIds: {
       Tvdb: string;
+      sonarr?: string;
       Imdb: string;
       Tmdb: string;
       TmdbCollection: string;

@@ -33,7 +33,8 @@ export function startJellyfinUnmonitor() {
       switch (Item.Type) {
         case 'Episode': {
           const itemPath = Item.Path;
-          if (Series.UserData.IsFavorite || !sonarrRootFolders.some(rootFolder => itemPath.startsWith(rootFolder))) {
+          const episodeSonarrId = Item.ProviderIds.sonarr;
+          if ((Series.UserData.IsFavorite) || (!episodeSonarrId && !sonarrRootFolders.some(rootFolder => itemPath.startsWith(rootFolder)))) {
             res.end();
             return;
           }
@@ -41,7 +42,7 @@ export function startJellyfinUnmonitor() {
           const episodeTvdbIds = [Item.ProviderIds.Tvdb];
           const seriesTitle = Series.OriginalTitle;
 
-          void unmonitorEpisode({ episodeTvdbIds, seriesTitle }, res);
+          void unmonitorEpisode({ episodeTvdbIds, seriesTitle, episodeSonarrId }, res);
           return;
         }
         case 'Movie': {

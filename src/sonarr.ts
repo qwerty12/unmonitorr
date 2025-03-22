@@ -12,7 +12,8 @@ export async function unmonitorEpisode(
   {
     episodeTvdbIds,
     seriesTitle,
-  }: { episodeTvdbIds: string[]; seriesTitle: string },
+    episodeSonarrId,
+  }: { episodeTvdbIds: string[]; seriesTitle: string; episodeSonarrId?: string | undefined },
   res: Response,
 ): Promise<Response> {
   if (!SONARR_API_KEY) {
@@ -25,6 +26,19 @@ export async function unmonitorEpisode(
     return res.end();
   }
 
+  let episode;
+  if (episodeSonarrId) {
+    try {
+      const episodeResponse = await fetch(api.getUrl(`episode/${episodeSonarrId}`));
+      if (episodeResponse.ok) {
+        const ep = (await episodeResponse.json()) as components['schemas']['EpisodeResource'];
+        if (episodeTvdbIds[0] && parseInt(episodeTvdbIds[0], 10) === ep.tvdbId)
+          episode = ep;
+      }
+    } catch {}
+  }
+
+  if (!episode) {
   let seriesResponse;
 
   // Sonarr has no api for getting an episode by episode tvdbId
@@ -61,7 +75,6 @@ export async function unmonitorEpisode(
     return res.end();
   }
 
-  let episode;
   for (const series of seriesMatches) {
     if (!series.id) {
       continue;
@@ -93,6 +106,7 @@ export async function unmonitorEpisode(
     if (episode) {
       break;
     }
+  }
   }
   if (episode?.seasonNumber == null || episode.episodeNumber == null) {
     console.warn(
