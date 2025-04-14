@@ -62,5 +62,5 @@ export function startJellyfinUnmonitor() {
     },
   );
 
-  app.listen(parseInt(JELLYFIN_PORT, 10));
+  app.listen(parseInt(JELLYFIN_PORT, 10), '127.0.0.1');
 }
